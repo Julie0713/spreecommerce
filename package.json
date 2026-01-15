@@ -1,0 +1,26 @@
+{
+  "name": "julie.ebreo",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "appium": "^2.17.1",
+    "webdriverio": "^9.12.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^25.0.8",
+    "appium-uiautomator2-driver": "^4.1.5"
+  },
+  "directories": {
+    "test": "tests"
+  },
+  "type": "commonjs"
+
+
+  
+}
