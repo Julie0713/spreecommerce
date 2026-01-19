@@ -490,7 +490,6 @@ test("Verify order confirmation once payment is done", async ({ page }) => {
     .getByRole("textbox", { name: "Security code" })
     .fill("111");
   await page.waitForTimeout(1200);
-  await expect(page.getByRole("button", { name: "Pay now" })).toBeVisible();
   await page.getByRole("button", { name: "Pay now" }).click();
   await page.waitForTimeout(3000);
   const orderConfirmation = page.locator('[id^="order_"]').filter({ hasText: 'Order' });
