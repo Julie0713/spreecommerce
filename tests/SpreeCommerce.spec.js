@@ -493,7 +493,15 @@ test("Verify order confirmation once payment is done", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Pay now" })).toBeVisible();
   await page.getByRole("button", { name: "Pay now" }).click();
   await page.waitForTimeout(3000);
-  await expect(page.getByText(/^Order/)).toBeVisible();
+  const orderConfirmation = page.locator('[id^="order_"]').filter({ hasText: 'Order' });
+  await expect(orderConfirmation).toBeVisible();
+  const orderId = await orderConfirmation.locator('strong').innerText();
+  console.log('Order ID:', orderId);
+  await expect(orderConfirmation).toMatchAriaSnapshot(`
+  - paragraph:
+    - text: Order
+    - strong
+  `);
   await expect(page.getByText("Your order is confirmed!")).toBeVisible();
   await expect(page.locator("h4")).toContainText("Thanks Juan for your order!");
 });
