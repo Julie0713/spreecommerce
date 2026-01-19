@@ -1,6 +1,5 @@
 import { test, expect } from './helpers/fixtures.js';
 import { generateCredentials } from './helpers/credentials.js';
-import { homePageButtons } from './helpers/homePageButtons.js';
 
 // keep one set of credentials for both Sign Up and Log In
 let creds;
