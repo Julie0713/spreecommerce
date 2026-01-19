@@ -15,6 +15,17 @@ test.beforeEach(async ({ page }) => {
   });
 });
 
+test("Verify page loads successfully", async ({ page }) => {
+  await expect(page.locator("#block-6472")).toContainText(
+    "Welcome to this Spree Commerce demo website"
+  );
+});
+
+test('Verify side menu opens correctly', async ({ page }) => {
+    await page.getByRole('button', { name: 'Open account panel' }).click();
+    await expect(page.locator('#slideover-account')).toContainText('Account');
+});
+
 test("Verify user can Sign Up", async ({ page }) => {
   const { email, password } = creds;
   await page
@@ -464,21 +475,21 @@ test("Verify order confirmation once payment is done", async ({ page }) => {
   await stripeFrameLocator
     .getByRole("textbox", { name: "Card number" })
     .fill("4242 4242 4242 4242");
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1200);
   await expect(
     stripeFrameLocator.getByRole("textbox", { name: "Expiration date MM / YY" })
   ).toBeVisible();
   await stripeFrameLocator
     .getByRole("textbox", { name: "Expiration date MM / YY" })
     .fill("01 / 30");
-  await page.waitForTimeout(3000);
+  await page.waitForTimeout(1200);
   await expect(
     stripeFrameLocator.getByRole("textbox", { name: "Security code" })
   ).toBeVisible();
-  await page.waitForTimeout(3000);
   await stripeFrameLocator
     .getByRole("textbox", { name: "Security code" })
     .fill("111");
+  await page.waitForTimeout(1200);
   await expect(page.getByRole("button", { name: "Pay now" })).toBeVisible();
   await page.getByRole("button", { name: "Pay now" }).click();
   await page.waitForTimeout(3000);
