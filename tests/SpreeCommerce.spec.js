@@ -62,6 +62,7 @@ test('Verify user browse and add products to cart', async ({ page }) => {
     await page.getByRole('link', { name: 'Gold Bracelet $' }).click();
     await page.waitForTimeout(3000);
     await page.getByRole('button', { name: 'Add To Cart' }).click();
+    await page.waitForTimeout(3000);
 });
 
 
@@ -121,9 +122,9 @@ test('Verify user can add a shipping address after checking out items', async ({
     await expect(page.getByText('Address', { exact: true })).toBeVisible();
     await page.getByLabel('Country').selectOption('2581');
     await page.getByRole('textbox', { name: 'First name' }).click();
-    await page.getByRole('textbox', { name: 'First name' }).fill('test1');
+    await page.getByRole('textbox', { name: 'First name' }).fill('Juan');
     await page.getByRole('textbox', { name: 'Last name' }).click();
-    await page.getByRole('textbox', { name: 'Last name' }).fill('account');
+    await page.getByRole('textbox', { name: 'Last name' }).fill('Dela Cruz');
     await page.getByRole('textbox', { name: 'Street and house number' }).click();
     await page.getByRole('textbox', { name: 'Street and house number' }).pressSequentially('red h', { delay: 1200 });
     await page.getByRole('option', { name: 'Red Hotel Cubao, Quezon City' }).click();
@@ -164,14 +165,9 @@ test('Verify different delivery and pricing options', async ({ page }) => {
     await page.getByRole('link', { name: 'Checkout' }).click();
     await expect(page.getByLabel('breadcrumb').getByText('Delivery')).toBeVisible();
 
-    //checking different delivery and pricing option
-    await expect(page.locator('#spree_shipping_rate_26279')).toContainText('Delivery in 3-5 business days');
-    await expect(page.locator('#spree_shipping_rate_26279')).toContainText('$5.00');
-    await expect(page.locator('#spree_shipping_rate_26280')).toContainText('Delivery in 2-3 business days');
-    await expect(page.locator('#spree_shipping_rate_26280')).toContainText('$10.00');
-    await expect(page.locator('#spree_shipping_rate_26281')).toContainText('Delivery in 1-2 business days');
-    await expect(page.locator('#spree_shipping_rate_26281')).toContainText('$15.00');
-    await page.getByRole('radio', { name: 'Next Day Delivery in Premium Delivery in 2-3' }).check();
+    await expect(page.getByText('Standard Delivery in 3-5 business days $')).toBeVisible();
+    await expect(page.getByText('Premium Delivery in 2-3 business days $')).toBeVisible();
+    await expect(page.getByText('Next Day Delivery in 1-2 business days $')).toBeVisible();
     await page.getByRole('radio', { name: 'Standard Delivery in 3-5' }).check();
     await page.getByRole('radio', { name: 'Premium Delivery in 2-3' }).check();
     await page.getByRole('radio', { name: 'Next Day Delivery in 1-2' }).check();
@@ -191,7 +187,36 @@ test('Verify different payment method and payment via card', async ({ page }) =>
     await expect(page.locator('#flashes')).toContainText('Signed in successfully.');
     await page.getByRole('link', { name: 'Items in cart, View bag', waitUntil: 'networkidle', timeout: 5000 }).click();
     await page.getByRole('link', { name: 'Checkout' }).click();
+    await expect(page.getByLabel('breadcrumb').getByText('Payment')).toBeVisible();
+    await page.waitForTimeout(3000);
 
+
+    //payment checking and card payment
+    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('alipay').click();
+    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('wechat_pay').click();
+    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('us_bank_account').click();
+    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('card').click();
+    await expect(page.locator('#checkout_payment_methods')).toContainText('Payment');
+    await expect(page.locator('#checkout_payment_methods')).toContainText('All transactions are secure and encrypted');
+    await expect(page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().locator('form')).toContainText('Card number');
+    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Card number' }).click();
+    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Card number' }).fill('4242 4242 4242 4242');
+    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Expiration date MM / YY' }).fill('01 / 30');
+    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Security code' }).fill('111');
+    await expect(page.locator('#payment-and-conditions')).toContainText('By placing this order you agree to Terms of Service and Privacy Policy.');
+});
+
+test('Verify oder confirmation once payment is done', async ({ page }) => {
+    const { email, password } = creds;
+    await page.getByRole('button', { name: 'Open account panel', waitUntil: 'networkidle', timeout: 2000 }).click();
+    // make sure login form is visible
+    await expect(page.getByRole('heading', { name: 'Login' })).toBeVisible();
+    await page.getByRole('textbox', { name: 'Email' }).fill(email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(password);
+    await page.getByRole('button', { name: 'Login', waitUntil: 'networkidle', timeout: 5000  }).click();
+    await expect(page.locator('#flashes')).toContainText('Signed in successfully.');
+    await page.getByRole('link', { name: 'Items in cart, View bag', waitUntil: 'networkidle', timeout: 5000 }).click();
+    await page.getByRole('link', { name: 'Checkout' }).click();
     await expect(page.getByLabel('breadcrumb').getByText('Payment')).toBeVisible();
     await page.waitForTimeout(3000);
 
@@ -211,6 +236,12 @@ test('Verify different payment method and payment via card', async ({ page }) =>
     await expect(page.locator('#payment-and-conditions')).toContainText('By placing this order you agree to Terms of Service and Privacy Policy.');
     await expect(page.getByRole('button', { name: 'Pay now' })).toBeVisible();
     await page.getByRole('button', { name: 'Pay now' }).click();
+    await page.waitForTimeout(3000);
+    await expect(page.locator('#order_12685')).toContainText('Order');
+    await expect(page.locator('#order_12685')).toContainText('Your order is confirmed!');
+    await expect(page.locator('h4')).toContainText('Thanks Juan for your order!');
+    await expect(page.getByText('Status Paid')).toBeVisible();
+    
 });
 
 

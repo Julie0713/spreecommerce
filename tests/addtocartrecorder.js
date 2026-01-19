@@ -2,7 +2,8 @@ import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
   // Recording...
-  await page.goto('await page.goto('https://demo.spreecommerce.org/');
+  await page.goto('await page.goto('https://demo.spreecommerce.org/
+  await page.getByRole('button', { name: 'Save and Continue' }).click();');
   await page.getByRole('button', { name: 'Open account panel' }).click();
   await page.getByRole('textbox', { name: 'Email' }).click();
   await page.getByRole('textbox', { name: 'Email' }).fill('test1@mailinator.com');
