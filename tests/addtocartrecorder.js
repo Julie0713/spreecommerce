@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 
 test('test', async ({ page }) => {
   // Recording...
-  await page.goto('https://demo.spreecommerce.org/');
+  await page.goto('await page.goto('https://demo.spreecommerce.org/');
   await page.getByRole('button', { name: 'Open account panel' }).click();
   await page.getByRole('textbox', { name: 'Email' }).click();
   await page.getByRole('textbox', { name: 'Email' }).fill('test1@mailinator.com');
@@ -49,6 +49,7 @@ test('test', async ({ page }) => {
   await expect(page.locator('#spree_shipping_rate_25673')).toContainText('$10.00');
   await expect(page.locator('#spree_shipping_rate_25674')).toContainText('Next Day Delivery in 1-2 business days');
   await expect(page.locator('#spree_shipping_rate_25674')).toContainText('$15.00');
+
   await page.getByRole('radio', { name: 'Next Day Delivery in 1-2' }).check();
   await page.getByRole('button', { name: 'Save and Continue' }).click();
 
@@ -89,6 +90,5 @@ test('test', async ({ page }) => {
   await expect(page.locator('#order_12648')).toContainText('test1 account627 Epifanio de los Santos AvenueQuezon City, 1109Philippines');
   await expect(page.locator('#order_12648')).toContainText('Billing Address');
   await expect(page.locator('#order_12648')).toContainText('test1 account627 Epifanio de los Santos AvenueQuezon City, 1109Philippines');
-
 
 });
