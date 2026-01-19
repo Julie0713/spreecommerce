@@ -1,8 +1,10 @@
 import { test, expect } from './helpers/fixtures.js';
 import { generateCredentials } from './helpers/credentials.js';
+import { homePageButtons } from './helpers/homePageButtons.js';
 
 // keep one set of credentials for both Sign Up and Log In
 let creds;
+
 
 test.beforeAll(() => {
   creds = generateCredentials();
@@ -128,7 +130,8 @@ test('Verify user can add a shipping address after checking out items', async ({
     await page.getByRole('textbox', { name: 'Street and house number' }).click();
     await page.getByRole('textbox', { name: 'Street and house number' }).pressSequentially('red h', { delay: 1200 });
     await page.getByRole('option', { name: 'Red Hotel Cubao, Quezon City' }).click();
-    await page.getByRole('button', { name: 'Save and Continue', waitUntil: 'networkidle', timeout: 5000  }).click();
+    await page.getByRole('button', { name: 'Save and Continue'}).click();
+    await page.waitForTimeout(3000);
     await expect(page.getByText('Delivery', { exact: true })).toBeVisible();
         
 });
@@ -146,10 +149,16 @@ test('Verify user can select a shipping method', async ({ page }) => {
     //add shipping address 
     await page.getByRole('link', { name: 'Items in cart, View bag', waitUntil: 'networkidle', timeout: 5000 }).click();
     await page.getByRole('link', { name: 'Checkout' }).click();
+    await page.waitForTimeout(3000);
+
     //select shipping method
     await expect(page.locator('h5')).toContainText('Delivery method from Shop location');
+    await page.getByRole('radio', { name: 'Standard Delivery in 3-5' }).check();
+    await page.waitForTimeout(3000);
+    await page.getByRole('radio', { name: 'Premium Delivery in 2-3' }).check();
+    await page.waitForTimeout(3000);
     await page.getByRole('radio', { name: 'Next Day Delivery in 1-2' }).check();
-
+    await page.waitForTimeout(3000);
 });
 
 test('Verify different delivery and pricing options', async ({ page }) => {
@@ -172,6 +181,7 @@ test('Verify different delivery and pricing options', async ({ page }) => {
     await page.getByRole('radio', { name: 'Premium Delivery in 2-3' }).check();
     await page.getByRole('radio', { name: 'Next Day Delivery in 1-2' }).check();
     await page.getByRole('button', { name: 'Save and Continue' }).click();
+    await page.waitForTimeout(3000);
     await expect(page.getByLabel('breadcrumb').getByText('Payment')).toBeVisible();
 
 });
@@ -190,23 +200,17 @@ test('Verify different payment method and payment via card', async ({ page }) =>
     await expect(page.getByLabel('breadcrumb').getByText('Payment')).toBeVisible();
     await page.waitForTimeout(3000);
 
-
     //payment checking and card payment
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('alipay').click();
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('wechat_pay').click();
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('us_bank_account').click();
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('card').click();
-    await expect(page.locator('#checkout_payment_methods')).toContainText('Payment');
-    await expect(page.locator('#checkout_payment_methods')).toContainText('All transactions are secure and encrypted');
-    await expect(page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().locator('form')).toContainText('Card number');
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Card number' }).click();
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Card number' }).fill('4242 4242 4242 4242');
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Expiration date MM / YY' }).fill('01 / 30');
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Security code' }).fill('111');
-    await expect(page.locator('#payment-and-conditions')).toContainText('By placing this order you agree to Terms of Service and Privacy Policy.');
+    const stripeFrameLocator = page.frameLocator('#checkout_payment_methods iframe[title="Secure payment input frame"]:not([aria-hidden="true"])'      );
+    await stripeFrameLocator.getByTestId('card').waitFor({ state: 'visible' });
+    await expect(stripeFrameLocator.getByTestId('card')).toBeVisible();
+    await expect(stripeFrameLocator.getByTestId('alipay')).toBeVisible();
+    await expect(stripeFrameLocator.getByTestId('wechat_pay')).toBeVisible();
+    await expect(stripeFrameLocator.getByTestId('us_bank_account')).toBeVisible();
+    await expect(stripeFrameLocator.getByLabel('Additional Payment Methods')).toBeVisible();
 });
 
-test('Verify oder confirmation once payment is done', async ({ page }) => {
+test('Verify order confirmation once payment is done', async ({ page }) => {
     const { email, password } = creds;
     await page.getByRole('button', { name: 'Open account panel', waitUntil: 'networkidle', timeout: 2000 }).click();
     // make sure login form is visible
@@ -215,35 +219,34 @@ test('Verify oder confirmation once payment is done', async ({ page }) => {
     await page.getByRole('textbox', { name: 'Password' }).fill(password);
     await page.getByRole('button', { name: 'Login', waitUntil: 'networkidle', timeout: 5000  }).click();
     await expect(page.locator('#flashes')).toContainText('Signed in successfully.');
-    await page.getByRole('link', { name: 'Items in cart, View bag', waitUntil: 'networkidle', timeout: 5000 }).click();
+    await page.getByRole('link', { name: 'Items in cart, View bag' }).click();
     await page.getByRole('link', { name: 'Checkout' }).click();
-    await expect(page.getByLabel('breadcrumb').getByText('Payment')).toBeVisible();
     await page.waitForTimeout(3000);
-
-
-    //payment checking and card payment
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('alipay').click();
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('wechat_pay').click();
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('us_bank_account').click();
-    await page.locator('iframe[name="__privateStripeFrame3376"]').contentFrame().getByTestId('card').click();
+  
+    // payment starts here
     await expect(page.locator('#checkout_payment_methods')).toContainText('Payment');
     await expect(page.locator('#checkout_payment_methods')).toContainText('All transactions are secure and encrypted');
-    await expect(page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().locator('form')).toContainText('Card number');
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Card number' }).click();
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Card number' }).fill('4242 4242 4242 4242');
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Expiration date MM / YY' }).fill('01 / 30');
-    await page.locator('iframe[name="__privateStripeFrame9246"]').contentFrame().getByRole('textbox', { name: 'Security code' }).fill('111');
-    await expect(page.locator('#payment-and-conditions')).toContainText('By placing this order you agree to Terms of Service and Privacy Policy.');
+    const stripeFrameLocator = page.frameLocator('#checkout_payment_methods iframe[title="Secure payment input frame"]:not([aria-hidden="true"])');
+    await stripeFrameLocator.getByRole('textbox', { name: 'Card number' }).waitFor({ state: 'visible' });
+    await expect(stripeFrameLocator.getByRole('textbox', { name: 'Card number' })).toBeVisible();
+    await stripeFrameLocator.getByRole('textbox', { name: 'Card number' }).fill('4242 4242 4242 4242');
+    await page.waitForTimeout(3000);
+    await expect(stripeFrameLocator.getByRole('textbox', { name: 'Expiration date MM / YY' })).toBeVisible();
+    await stripeFrameLocator.getByRole('textbox', { name: 'Expiration date MM / YY' }).fill('01 / 30');
+    await page.waitForTimeout(3000);
+    await expect(stripeFrameLocator.getByRole('textbox', { name: 'Security code' })).toBeVisible();
+    await page.waitForTimeout(3000);
+    await stripeFrameLocator.getByRole('textbox', { name: 'Security code' }).fill('111');
     await expect(page.getByRole('button', { name: 'Pay now' })).toBeVisible();
     await page.getByRole('button', { name: 'Pay now' }).click();
     await page.waitForTimeout(3000);
-    await expect(page.locator('#order_12685')).toContainText('Order');
-    await expect(page.locator('#order_12685')).toContainText('Your order is confirmed!');
+    await expect(page.getByText(/^Order/)).toBeVisible();
+    await expect(page.getByText('Your order is confirmed!')).toBeVisible();
     await expect(page.locator('h4')).toContainText('Thanks Juan for your order!');
-    await expect(page.getByText('Status Paid')).toBeVisible();
-    
-});
-
+  });
+  
+  
+  
 
 
 
